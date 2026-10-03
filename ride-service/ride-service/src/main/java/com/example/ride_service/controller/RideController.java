@@ -28,25 +28,35 @@ public class RideController {
     }
 
     @GetMapping("/{id}")
-    public Ride getRideById(@PathVariable Long id) {
+    public Ride getRideById(@PathVariable String id) {
         return rideService.getRideById(id);
     }
+
+    @PutMapping("/{id}/assign/{driverId}")
+     public Ride assignDriver(
+        @PathVariable String id,
+        @PathVariable Long driverId) {
+
+    return rideService.assignDriver(id, driverId);
+   }
+
     @PutMapping("/{id}/accept")
-     public Ride acceptRide(@PathVariable Long id) {
+    public Ride acceptRide(@PathVariable String id) {
         return rideService.acceptRide(id);
     }
+
     @PutMapping("/{id}/start")
-    public Ride startRide(@PathVariable Long id) {
-    return rideService.startRide(id);
+    public Ride startRide(@PathVariable String id) {
+        return rideService.startRide(id);
     }
 
     @PutMapping("/{id}/complete")
-    public Ride completeRide(@PathVariable Long id) {
-    return rideService.completeRide(id);
+    public Ride completeRide(@PathVariable String id) {
+        return rideService.completeRide(id);
     }
 
     @PutMapping("/{id}/cancel")
-    public Ride cancelRide(@PathVariable Long id) {
-    return rideService.cancelRide(id);
+    public Ride cancelRide(@PathVariable String id) {
+        return rideService.cancelRide(id);
     }
 }

@@ -1,9 +1,11 @@
 package com.example.ride_service.model;
 
 public enum RideStatus {
+
     REQUESTED,
+    ASSIGNED,
     ACCEPTED,
-    STARTED,
+    IN_PROGRESS,
     COMPLETED,
     CANCELLED
 }
