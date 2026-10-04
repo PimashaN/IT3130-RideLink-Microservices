@@ -23,10 +23,15 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // accessible Swagger
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                // Accessible Swagger endpoints
+                .requestMatchers(
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui.html",
+                    "/v3/api-docs/swagger-config"
+                ).permitAll()
                 
-                // Update the Driver  location/availability
+                // Update the Driver location/availability
                 .requestMatchers(HttpMethod.PATCH, "/api/drivers/{id}/**").hasAnyAuthority("ROLE_DRIVER", "ROLE_ADMIN")
                 
                 // Create or delete vehicles and drivers - only accessible by Admin or the respective Driver
