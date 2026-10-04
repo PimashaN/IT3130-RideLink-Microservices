@@ -1,0 +1,164 @@
+{
+  "info": {
+    "_postman_id": "c9d30107-0aef-45a6-9d6d-241024590001",
+    "name": "RideLink Account Service - IT24102459",
+    "description": "Successful and negative API scenarios for Nimnaka K.A.P.'s Account Service.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "accessToken", "value": "" },
+    { "key": "accountId", "value": "" },
+    { "key": "adminToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1 - Register Passenger",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Kasun Perera\",\n  \"email\": \"kasun@example.com\",\n  \"password\": \"Password@123\",\n  \"phoneNumber\": \"0771234567\",\n  \"role\": \"PASSENGER\"\n}"
+        },
+        "url": "{{accountBaseUrl}}/api/auth/register"
+      }
+    },
+    {
+      "name": "2 - Register Driver",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Nimal Silva\",\n  \"email\": \"driver@example.com\",\n  \"password\": \"Password@123\",\n  \"phoneNumber\": \"0712345678\",\n  \"role\": \"DRIVER\"\n}"
+        },
+        "url": "{{accountBaseUrl}}/api/auth/register"
+      }
+    },
+    {
+      "name": "3 - Login Passenger and Save Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Login succeeded', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('accessToken', body.accessToken);",
+              "pm.collectionVariables.set('accountId', body.accountId);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"kasun@example.com\",\n  \"password\": \"Password@123\"\n}"
+        },
+        "url": "{{accountBaseUrl}}/api/auth/login"
+      }
+    },
+    {
+      "name": "4 - View My Profile",
+      "request": {
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+        "method": "GET",
+        "url": "{{accountBaseUrl}}/api/accounts/me"
+      }
+    },
+    {
+      "name": "5 - Update My Profile",
+      "request": {
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Kasun Perera Updated\",\n  \"phoneNumber\": \"0761112233\"\n}"
+        },
+        "url": "{{accountBaseUrl}}/api/accounts/me"
+      }
+    },
+    {
+      "name": "6 - Admin Changes Account Status",
+      "request": {
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"SUSPENDED\"\n}" },
+        "url": "{{accountBaseUrl}}/api/accounts/{{accountId}}/status"
+      }
+    },
+    {
+      "name": "7 - Admin Changes Account Role",
+      "request": {
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"role\": \"DRIVER\"\n}" },
+        "url": "{{accountBaseUrl}}/api/accounts/{{accountId}}/role"
+      }
+    },
+    {
+      "name": "Negative Scenarios",
+      "item": [
+        {
+          "name": "Duplicate Email - Expect 409",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Duplicate User\",\n  \"email\": \"kasun@example.com\",\n  \"password\": \"Password@123\",\n  \"phoneNumber\": \"0779999999\",\n  \"role\": \"PASSENGER\"\n}"
+            },
+            "url": "{{accountBaseUrl}}/api/auth/register"
+          }
+        },
+        {
+          "name": "Invalid Input - Expect 400",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"A\",\n  \"email\": \"wrong\",\n  \"password\": \"123\",\n  \"phoneNumber\": \"12\",\n  \"role\": \"PASSENGER\"\n}"
+            },
+            "url": "{{accountBaseUrl}}/api/auth/register"
+          }
+        },
+        {
+          "name": "Public Admin Registration - Expect 400",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Fake Admin\",\n  \"email\": \"fakeadmin@example.com\",\n  \"password\": \"Password@123\",\n  \"phoneNumber\": \"0779999999\",\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": "{{accountBaseUrl}}/api/auth/register"
+          }
+        },
+        {
+          "name": "No Token - Expect 401",
+          "request": {
+            "method": "GET",
+            "url": "{{accountBaseUrl}}/api/accounts/me"
+          }
+        },
+        {
+          "name": "Passenger Uses Admin Endpoint - Expect 403",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"SUSPENDED\"\n}" },
+            "url": "{{accountBaseUrl}}/api/accounts/{{accountId}}/status"
+          }
+        }
+      ]
+    }
+  ]
+}

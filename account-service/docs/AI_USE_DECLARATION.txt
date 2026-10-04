@@ -1,0 +1,6 @@
+Suggested declaration - edit this so it remains factually accurate:
+
+Generative AI was used as a development-support tool to help plan the Account Service,
+draft an initial Spring Boot structure, suggest test cases, and improve documentation.
+The student reviewed, tested, adapted, and takes responsibility for the submitted code and
+can explain its architecture, security controls, APIs, tests, and limitations.
