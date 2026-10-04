@@ -1,6 +1,6 @@
+
 package com.example.ride_service;
 
-import com.example.ride_service.client.DriverServiceClient;
 import com.example.ride_service.model.Ride;
 import com.example.ride_service.model.RideStatus;
 import com.example.ride_service.repository.RideRepository;
@@ -17,122 +17,158 @@ import static org.mockito.Mockito.*;
 class RideServiceTest {
 
     @Test
-void createRide_shouldSetStatusToRequested() {
+    void createRide_shouldSetStatusToRequested() {
 
-    RideRepository rideRepository = mock(RideRepository.class);
-    DriverServiceClient driverServiceClient = mock(DriverServiceClient.class);
+        RideRepository rideRepository = mock(RideRepository.class);
 
-    RideService rideService =
-            new RideService(rideRepository, driverServiceClient);
+        RideService rideService =
+                new RideService(rideRepository);
 
-    DriverServiceClient.Driver driver =
-            new DriverServiceClient.Driver();
+        Ride ride = new Ride();
 
-    driver.setId(101L);
-    driver.setName("Nimal Perera");
-    driver.setPhone("0712345678");
+        ride.setPassengerName("Ayesha");
+        ride.setPickup("Anuradhapura");
+        ride.setDestination("Kandy");
 
-    when(driverServiceClient.getAvailableDriver())
-            .thenReturn(driver);
+        when(rideRepository.save(any(Ride.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
-    Ride ride = new Ride();
-    ride.setPassengerName("Ayesha");
-    ride.setPickup("Anuradhapura");
-    ride.setDestination("Kandy");
+        Ride result = rideService.createRide(ride);
 
-    when(rideRepository.save(any(Ride.class)))
-            .thenAnswer(invocation -> invocation.getArgument(0));
+        assertEquals(RideStatus.REQUESTED, result.getStatus());
 
-    Ride result = rideService.createRide(ride);
-
-    assertEquals(RideStatus.REQUESTED, result.getStatus());
-    assertEquals(101L, result.getDriverId());
-
-    verify(driverServiceClient).getAvailableDriver();
-    verify(rideRepository).save(ride);
+        verify(rideRepository).save(ride);
     }
+
+
+    @Test
+    void assignDriver_shouldSetDriverAndStatusToAssigned() {
+
+        RideRepository rideRepository = mock(RideRepository.class);
+
+        RideService rideService =
+                new RideService(rideRepository);
+
+        Ride ride = new Ride();
+
+        ride.setStatus(RideStatus.REQUESTED);
+
+        when(rideRepository.findById("1"))
+                .thenReturn(Optional.of(ride));
+
+        when(rideRepository.save(ride))
+                .thenReturn(ride);
+
+        Ride result = rideService.assignDriver("1", 101L);
+
+        assertEquals(101L, result.getDriverId());
+        assertEquals(RideStatus.ASSIGNED, result.getStatus());
+
+        verify(rideRepository).save(ride);
+    }
+
 
     @Test
     void acceptRide_shouldChangeStatusToAccepted() {
 
         RideRepository rideRepository = mock(RideRepository.class);
-        DriverServiceClient driverServiceClient = mock(DriverServiceClient.class);
 
         RideService rideService =
-                new RideService(rideRepository, driverServiceClient);
+                new RideService(rideRepository);
 
         Ride ride = new Ride();
-        ride.setStatus(RideStatus.REQUESTED);
 
-        when(rideRepository.findById(1L)).thenReturn(Optional.of(ride));
-        when(rideRepository.save(ride)).thenReturn(ride);
+        ride.setStatus(RideStatus.ASSIGNED);
+        ride.setDriverId(101L);
 
-        Ride result = rideService.acceptRide(1L);
+        when(rideRepository.findById("1"))
+                .thenReturn(Optional.of(ride));
+
+        when(rideRepository.save(ride))
+                .thenReturn(ride);
+
+        Ride result = rideService.acceptRide("1");
 
         assertEquals(RideStatus.ACCEPTED, result.getStatus());
+
         verify(rideRepository).save(ride);
     }
+
 
     @Test
-    void startRide_shouldChangeStatusToStarted() {
+    void startRide_shouldChangeStatusToInProgress() {
 
         RideRepository rideRepository = mock(RideRepository.class);
-        DriverServiceClient driverServiceClient = mock(DriverServiceClient.class);
 
         RideService rideService =
-                new RideService(rideRepository, driverServiceClient);
+                new RideService(rideRepository);
 
         Ride ride = new Ride();
+
         ride.setStatus(RideStatus.ACCEPTED);
 
-        when(rideRepository.findById(1L)).thenReturn(Optional.of(ride));
-        when(rideRepository.save(ride)).thenReturn(ride);
+        when(rideRepository.findById("1"))
+                .thenReturn(Optional.of(ride));
 
-        Ride result = rideService.startRide(1L);
+        when(rideRepository.save(ride))
+                .thenReturn(ride);
 
-        assertEquals(RideStatus.STARTED, result.getStatus());
+        Ride result = rideService.startRide("1");
+
+        assertEquals(RideStatus.IN_PROGRESS, result.getStatus());
+
         verify(rideRepository).save(ride);
     }
+
 
     @Test
     void completeRide_shouldChangeStatusToCompleted() {
 
         RideRepository rideRepository = mock(RideRepository.class);
-        DriverServiceClient driverServiceClient = mock(DriverServiceClient.class);
 
         RideService rideService =
-                new RideService(rideRepository, driverServiceClient);
+                new RideService(rideRepository);
 
         Ride ride = new Ride();
-        ride.setStatus(RideStatus.STARTED);
 
-        when(rideRepository.findById(1L)).thenReturn(Optional.of(ride));
-        when(rideRepository.save(ride)).thenReturn(ride);
+        ride.setStatus(RideStatus.IN_PROGRESS);
 
-        Ride result = rideService.completeRide(1L);
+        when(rideRepository.findById("1"))
+                .thenReturn(Optional.of(ride));
+
+        when(rideRepository.save(ride))
+                .thenReturn(ride);
+
+        Ride result = rideService.completeRide("1");
 
         assertEquals(RideStatus.COMPLETED, result.getStatus());
+
         verify(rideRepository).save(ride);
     }
+
 
     @Test
     void cancelRide_shouldChangeStatusToCancelled() {
 
         RideRepository rideRepository = mock(RideRepository.class);
-        DriverServiceClient driverServiceClient = mock(DriverServiceClient.class);
 
         RideService rideService =
-                new RideService(rideRepository, driverServiceClient);
+                new RideService(rideRepository);
 
         Ride ride = new Ride();
+
         ride.setStatus(RideStatus.REQUESTED);
 
-        when(rideRepository.findById(1L)).thenReturn(Optional.of(ride));
-        when(rideRepository.save(ride)).thenReturn(ride);
+        when(rideRepository.findById("1"))
+                .thenReturn(Optional.of(ride));
 
-        Ride result = rideService.cancelRide(1L);
+        when(rideRepository.save(ride))
+                .thenReturn(ride);
+
+        Ride result = rideService.cancelRide("1");
 
         assertEquals(RideStatus.CANCELLED, result.getStatus());
+
         verify(rideRepository).save(ride);
     }
 }
